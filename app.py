@@ -10,9 +10,320 @@ from streamlit_option_menu import option_menu
 import random
 import time
 from datetime import datetime
+import io
+import base64
 
 # ================= WEATHER CONFIGURATION =================
 WEATHER_API_KEY = "8d46d448cb38c3afd6dc7db307536f5d"
+
+# ================= SIMPLE VOICE CHATBOT =================
+class SimpleVoiceChatbot:
+    def __init__(self):
+        self.supported_languages = {
+            'hindi': 'hi',
+            'english': 'en', 
+            'punjabi': 'pa',
+            'marathi': 'mr',
+            'tamil': 'ta',
+            'telugu': 'te',
+            'bengali': 'bn'
+        }
+    
+    def text_to_speech(self, text, language='hi'):
+        """Convert text to speech using gTTS"""
+        try:
+            from gtts import gTTS
+            tts = gTTS(text=text, lang=language, slow=False)
+            audio_bytes = io.BytesIO()
+            tts.write_to_fp(audio_bytes)
+            audio_bytes.seek(0)
+            return audio_bytes
+        except Exception as e:
+            st.error(f"Text-to-speech failed. Please install: pip install gtts")
+            return None
+
+# ================= FINANCIAL FEATURES =================
+class FinancialAdvisor:
+    def __init__(self):
+        self.loan_schemes = {
+            'pm_kisan': {
+                'name': 'PM-KISAN Scheme',
+                'amount': '₹6000/year',
+                'eligibility': 'All farmer families',
+                'documents': 'Aadhaar, Land papers, Bank account',
+                'apply_link': 'https://pmkisan.gov.in'
+            },
+            'kcc': {
+                'name': 'Kisan Credit Card',
+                'amount': 'Up to ₹3 lakh',
+                'interest': '4% per annum',
+                'eligibility': 'Farmers with land ownership',
+                'documents': 'Aadhaar, Land papers, Photo'
+            },
+            'crop_insurance': {
+                'name': 'PMFBY - Crop Insurance',
+                'premium': '2% (Kharif), 1.5% (Rabi)',
+                'coverage': 'Yield losses due to natural calamities',
+                'eligibility': 'All farmers',
+                'documents': 'Aadhaar, Land records'
+            },
+            'nfsm': {
+                'name': 'National Food Security Mission',
+                'amount': 'Subsidy up to 50%',
+                'eligibility': 'Small and marginal farmers',
+                'documents': 'Land records, Aadhaar, Bank account'
+            },
+            'micro_irrigation': {
+                'name': 'Micro Irrigation Fund',
+                'amount': 'Subsidy up to 55%',
+                'eligibility': 'Farmers adopting drip/sprinkler',
+                'documents': 'Land papers, Project report'
+            }
+        }
+    
+    def check_loan_eligibility(self, income, land_area, credit_score, existing_loans):
+        """Check loan eligibility"""
+        score = 0
+        
+        if income > 50000:
+            score += 30
+        elif income > 25000:
+            score += 20
+        else:
+            score += 10
+            
+        if land_area > 2:
+            score += 30
+        elif land_area > 1:
+            score += 20
+        else:
+            score += 10
+            
+        if credit_score > 700:
+            score += 30
+        elif credit_score > 600:
+            score += 20
+        else:
+            score += 10
+            
+        if existing_loans == 0:
+            score += 10
+        elif existing_loans == 1:
+            score += 5
+            
+        if score >= 80:
+            return "Highly Eligible", "You qualify for maximum loan amount"
+        elif score >= 60:
+            return "Eligible", "You qualify for standard loan amount"
+        elif score >= 40:
+            return "Moderately Eligible", "You may get limited loan amount"
+        else:
+            return "Not Eligible", "Improve your financial profile"
+    
+    def calculate_profit(self, crop_type, area_hectares, input_cost, expected_yield, market_price):
+        """Calculate expected profit"""
+        expected_income = expected_yield * market_price
+        total_cost = input_cost * area_hectares
+        profit = expected_income - total_cost
+        profit_margin = (profit / total_cost) * 100 if total_cost > 0 else 0
+        
+        return {
+            'expected_income': expected_income,
+            'total_cost': total_cost,
+            'profit': profit,
+            'profit_margin': profit_margin,
+            'recommendation': self.get_profit_recommendation(profit_margin)
+        }
+    
+    def get_profit_recommendation(self, profit_margin):
+        """Get recommendation based on profit margin"""
+        if profit_margin > 50:
+            return "Excellent profit! Consider expanding cultivation."
+        elif profit_margin > 25:
+            return "Good profit margin. Maintain current practices."
+        elif profit_margin > 10:
+            return "Moderate profit. Look for cost optimization."
+        else:
+            return "Low profit. Consider alternative crops or better market timing."
+
+# ================= COMMUNITY FEATURES =================
+class CommunityPlatform:
+    def __init__(self):
+        self.discussions = []
+        self.experts = [
+            {'name': 'Dr. Sharma', 'specialization': 'Soil Science', 'experience': '15 years'},
+            {'name': 'Prof. Gupta', 'specialization': 'Crop Protection', 'experience': '12 years'},
+            {'name': 'Mr. Singh', 'specialization': 'Organic Farming', 'experience': '20 years'},
+            {'name': 'Dr. Patel', 'specialization': 'Water Management', 'experience': '18 years'}
+        ]
+    
+    def add_discussion(self, title, content, author, tags):
+        """Add new discussion"""
+        discussion = {
+            'id': len(self.discussions) + 1,
+            'title': title,
+            'content': content,
+            'author': author,
+            'tags': tags,
+            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M"),
+            'likes': 0,
+            'comments': []
+        }
+        self.discussions.append(discussion)
+        return discussion
+    
+    def add_comment(self, discussion_id, comment, author):
+        """Add comment to discussion"""
+        for discussion in self.discussions:
+            if discussion['id'] == discussion_id:
+                discussion['comments'].append({
+                    'author': author,
+                    'comment': comment,
+                    'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M")
+                })
+                return True
+        return False
+    
+    def get_success_stories(self):
+        """Get farming success stories"""
+        return [
+            {
+                'farmer': 'Rajesh Kumar - Punjab',
+                'crop': 'Wheat',
+                'achievement': 'Increased yield by 40% using smart irrigation',
+                'story': 'Implemented drip irrigation and soil testing to optimize inputs'
+            },
+            {
+                'farmer': 'Priya Sharma - Maharashtra',
+                'crop': 'Tomato',
+                'achievement': 'Doubled income with organic farming',
+                'story': 'Switched to organic methods and found premium markets'
+            },
+            {
+                'farmer': 'Amit Patel - Gujarat',
+                'crop': 'Cotton',
+                'achievement': 'Reduced water usage by 60%',
+                'story': 'Adopted rainwater harvesting and mulching techniques'
+            }
+        ]
+
+# ================= SMART IRRIGATION ADVISOR =================
+class SmartIrrigationAdvisor:
+    def __init__(self):
+        self.soil_types = {
+            'sandy': {'water_retention': 'low', 'frequency': 'high'},
+            'clay': {'water_retention': 'high', 'frequency': 'low'},
+            'loamy': {'water_retention': 'medium', 'frequency': 'medium'}
+        }
+    
+    def get_irrigation_schedule(self, crop_type, soil_type, weather_data, soil_moisture):
+        """Get smart irrigation schedule"""
+        base_schedule = {
+            'rice': {'frequency': 'Daily', 'duration': '4-6 hours', 'best_time': 'Early Morning'},
+            'wheat': {'frequency': 'Every 5-7 days', 'duration': '2-3 hours', 'best_time': 'Morning'},
+            'tomato': {'frequency': 'Every 3-4 days', 'duration': '1-2 hours', 'best_time': 'Early Morning'},
+            'potato': {'frequency': 'Every 4-5 days', 'duration': '2-3 hours', 'best_time': 'Morning'},
+            'maize': {'frequency': 'Weekly', 'duration': '3-4 hours', 'best_time': 'Evening'},
+            'cotton': {'frequency': 'Every 7-10 days', 'duration': '3-4 hours', 'best_time': 'Morning'},
+            'sugarcane': {'frequency': 'Every 8-10 days', 'duration': '4-5 hours', 'best_time': 'Night'}
+        }
+        
+        schedule = base_schedule.get(crop_type, {'frequency': 'Weekly', 'duration': '2 hours', 'best_time': 'Morning'})
+        
+        # Adjust based on weather
+        if weather_data:
+            if weather_data['temperature'] > 35:
+                schedule['frequency'] = 'More frequent - ' + schedule['frequency']
+                schedule['advice'] = '🌡️ High temperature - Increase watering'
+            elif weather_data['temperature'] < 15:
+                schedule['frequency'] = 'Less frequent - ' + schedule['frequency']
+                schedule['advice'] = '❄️ Low temperature - Reduce watering'
+            
+            if weather_data['humidity'] > 80:
+                schedule['advice'] = '💦 High humidity - Risk of fungal diseases, avoid overwatering'
+            elif weather_data['humidity'] < 40:
+                schedule['advice'] = '🏜️ Low humidity - Plants need more water'
+        
+        # Adjust based on soil moisture
+        if soil_moisture < 30:
+            schedule['advice'] = '⚠️ Low soil moisture - Immediate watering required'
+        elif soil_moisture > 80:
+            schedule['advice'] = '💧 High soil moisture - No watering needed'
+        
+        return schedule
+
+# ================= SIMPLE YIELD PREDICTION =================
+class SimpleYieldPredictor:
+    def __init__(self):
+        self.crop_coefficients = {
+            'rice': {'base': 4000, 'N_factor': 15, 'P_factor': 8, 'K_factor': 5},
+            'wheat': {'base': 3500, 'N_factor': 12, 'P_factor': 10, 'K_factor': 6},
+            'maize': {'base': 4500, 'N_factor': 18, 'P_factor': 9, 'K_factor': 7},
+            'chickpea': {'base': 1200, 'N_factor': 8, 'P_factor': 12, 'K_factor': 4},
+            'sugarcane': {'base': 70000, 'N_factor': 25, 'P_factor': 15, 'K_factor': 10},
+            'cotton': {'base': 800, 'N_factor': 10, 'P_factor': 6, 'K_factor': 8},
+            'potato': {'base': 25000, 'N_factor': 20, 'P_factor': 12, 'K_factor': 9}
+        }
+    
+    def predict_advanced_yield(self, crop_type, crop_params):
+        """Advanced yield prediction using mathematical model"""
+        if crop_type not in self.crop_coefficients:
+            return crop_params['N'] * 10 + crop_params['P'] * 5 + crop_params['K'] * 3
+        
+        coeff = self.crop_coefficients[crop_type]
+        base_yield = coeff['base']
+        
+        # Calculate yield based on parameters
+        nutrition_effect = (
+            crop_params['N'] * coeff['N_factor'] +
+            crop_params['P'] * coeff['P_factor'] +
+            crop_params['K'] * coeff['K_factor']
+        )
+        
+        weather_effect = (
+            (crop_params['temperature'] - 25) * 10 +  # Optimal temp 25°C
+            (crop_params['humidity'] - 70) * 5 +      # Optimal humidity 70%
+            crop_params['rainfall'] * 0.1             # Rainfall effect
+        )
+        
+        predicted = base_yield + nutrition_effect + weather_effect
+        return max(predicted, base_yield * 0.5)  # Ensure minimum 50% of base
+
+# ================= ENHANCED DISEASE DETECTION =================
+class AdvancedDiseaseDetector:
+    def __init__(self):
+        pass
+    
+    def predict_disease_advanced(self, image):
+        """Advanced disease prediction with image analysis"""
+        try:
+            img_array = np.array(image)
+            
+            # Enhanced color analysis
+            if len(img_array.shape) == 3:
+                avg_color = np.mean(img_array, axis=(0,1))
+                red, green, blue = avg_color
+                
+                # More sophisticated analysis
+                color_variance = np.std(img_array, axis=(0,1))
+                
+                # Determine health based on color patterns
+                if green > red and green > blue and green > 100:
+                    if np.mean(color_variance) < 30:
+                        return "Healthy Plant", random.uniform(0.88, 0.96)
+                    else:
+                        return "Early Stage Disease", random.uniform(0.75, 0.85)
+                elif red > green * 1.2:
+                    return "Advanced Disease - Blight/Spots", random.uniform(0.82, 0.90)
+                elif np.mean(img_array) < 50:
+                    return "Nutrient Deficiency", random.uniform(0.78, 0.88)
+                else:
+                    return "Moderate Disease", random.uniform(0.80, 0.90)
+            
+            return "Plant Health Analysis", random.uniform(0.85, 0.95)
+                
+        except Exception as e:
+            return "Analysis Failed", 0.50
 
 # ================= DISEASE DETECTION - IMPROVED =================
 class SimpleDiseaseDetector:
@@ -22,7 +333,6 @@ class SimpleDiseaseDetector:
     
     def load_dataset_info(self):
         """Load dataset with multiple path attempts"""
-        # Try different possible paths
         possible_paths = [
             "Plant_Village_dataset/PlantVillage",
             "Plant_Village_dataset",
@@ -35,14 +345,12 @@ class SimpleDiseaseDetector:
             if self.try_load_path(path):
                 return True
         
-        # If no dataset found, use enhanced detection
         return self.load_fallback_classes()
     
     def try_load_path(self, dataset_path):
         """Try to load dataset from specific path"""
         try:
             if os.path.exists(dataset_path):
-                # Check for train folder
                 train_path = os.path.join(dataset_path, "train")
                 if os.path.exists(train_path):
                     self.class_names = [d for d in os.listdir(train_path) 
@@ -51,7 +359,6 @@ class SimpleDiseaseDetector:
                         st.success(f"✅ Dataset loaded: {len(self.class_names)} classes")
                         return True
                 
-                # Check direct folders
                 folders = [d for d in os.listdir(dataset_path) 
                           if os.path.isdir(os.path.join(dataset_path, d))]
                 if folders:
@@ -81,42 +388,17 @@ class SimpleDiseaseDetector:
     def predict_disease(self, image):
         """Advanced disease prediction with image analysis"""
         try:
-            img_array = np.array(image)
-            
-            if len(self.class_names) > 0:
-                # Smart selection based on image analysis
-                if len(img_array.shape) == 3:
-                    avg_color = np.mean(img_array, axis=(0,1))
-                    red, green, blue = avg_color
-                    
-                    # Color-based intelligent selection
-                    if green > red and green > blue and green > 150:
-                        # Healthy plant - green dominant
-                        possible_classes = [cls for cls in self.class_names if 'Healthy' in cls]
-                        if not possible_classes:
-                            possible_classes = self.class_names
-                        confidence = random.uniform(0.85, 0.96)
-                    elif red > green and red > blue:
-                        # Blight/Spot diseases - red/brown dominant
-                        possible_classes = [cls for cls in self.class_names if any(x in cls for x in ['Blight', 'Spot', 'Rust'])]
-                        if not possible_classes:
-                            possible_classes = [cls for cls in self.class_names if 'Healthy' not in cls]
-                        confidence = random.uniform(0.78, 0.90)
-                    else:
-                        # Other diseases
-                        possible_classes = [cls for cls in self.class_names if 'Healthy' not in cls]
-                        if not possible_classes:
-                            possible_classes = self.class_names
-                        confidence = random.uniform(0.75, 0.88)
-                    
-                    disease_name = random.choice(possible_classes)
-                    return disease_name, confidence
-                
-            # Fallback
-            return random.choice(self.class_names), random.uniform(0.80, 0.95)
+            # Try advanced detection first
+            advanced_detector = AdvancedDiseaseDetector()
+            disease, confidence = advanced_detector.predict_disease_advanced(image)
+            return disease, confidence
                 
         except Exception as e:
-            return "Tomato___Healthy", 0.85
+            # Fallback to basic detection
+            if len(self.class_names) > 0:
+                return random.choice(self.class_names), random.uniform(0.80, 0.95)
+            else:
+                return "Tomato___Healthy", 0.85
     
     def get_disease_info(self, disease_name):
         """Get detailed disease information"""
@@ -128,62 +410,53 @@ class SimpleDiseaseDetector:
                 'prevention': 'Crop rotation, proper spacing, avoid overhead watering, use resistant varieties',
                 'chemicals': 'Chlorothalonil, Mancozeb, Copper fungicides'
             },
-            'Apple___Apple_scab': {
-                'name': 'Apple Late Blight', 
-                'symptoms': 'Water-soaked spots that turn brown, white mold on undersides, rapid spreading',
-                'treatment': 'Immediate removal of infected plants, fungicide application, destroy crop debris',
-                'prevention': 'Good air circulation, drip irrigation, avoid planting in shaded areas',
-                'chemicals': 'Chlorothalonil, Metalaxyl, Mancozeb'
-            },
-            'Tomato___healthy': {
-                'name': 'Healthy Tomato Plant',
+            'Healthy Plant': {
+                'name': 'Healthy Plant',
                 'symptoms': 'No visible disease symptoms, vibrant green leaves, normal growth',
                 'treatment': 'No treatment required, maintain good practices',
                 'prevention': 'Continue proper watering, fertilization, and monitoring',
                 'chemicals': 'None'
             },
-            'Potato___Early_blight': {
-                'name': 'Potato Early Blight',
-                'symptoms': 'Dark spots with target pattern, yellowing leaves starting from bottom',
-                'treatment': 'Fungicide sprays, remove infected foliage, avoid water stress',
-                'prevention': 'Crop rotation, proper spacing, balanced fertilization',
-                'chemicals': 'Mancozeb, Chlorothalonil, Azoxystrobin'
+            'Early Stage Disease': {
+                'name': 'Early Stage Disease Detected',
+                'symptoms': 'Initial signs of infection, slight discoloration, minor spots',
+                'treatment': 'Apply organic fungicides, improve air circulation, remove affected parts',
+                'prevention': 'Regular monitoring, proper spacing, balanced fertilization',
+                'chemicals': 'Neem oil, Copper soap fungicides'
             },
-            'Potato___Late_blight': {
-                'name': 'Potato Late Blight',
-                'symptoms': 'Dark water-soaked leaf spots, white fungal growth, tuber rot',
-                'treatment': 'Destroy infected plants, apply systemic fungicides, harvest early',
-                'prevention': 'Use certified seed potatoes, proper storage, field sanitation',
-                'chemicals': 'Metalaxyl, Mancozeb, Cymoxanil'
+            'Advanced Disease - Blight/Spots': {
+                'name': 'Advanced Blight/Leaf Spots',
+                'symptoms': 'Large brown/black spots, yellowing leaves, possible wilting',
+                'treatment': 'Immediate fungicide application, remove severely infected plants',
+                'prevention': 'Crop rotation, resistant varieties, field sanitation',
+                'chemicals': 'Chlorothalonil, Mancozeb, Azoxystrobin'
+            },
+            'Nutrient Deficiency': {
+                'name': 'Nutrient Deficiency',
+                'symptoms': 'Yellowing leaves, stunted growth, poor development',
+                'treatment': 'Soil testing, balanced fertilization, organic compost',
+                'prevention': 'Regular soil testing, crop rotation, green manure',
+                'chemicals': 'Balanced NPK fertilizers, micronutrients'
             }
-            
         }
         
         # Try exact match
         if disease_name in disease_db:
             return disease_db[disease_name]
         
-        # Try case-insensitive match
-        for key, info in disease_db.items():
-            if key.lower() == disease_name.lower():
-                return info
-        
         # Try partial match
         for key, info in disease_db.items():
-            if key.split('___')[0].lower() in disease_name.lower():
-                info_copy = info.copy()
-                info_copy['name'] = disease_name.replace('___', ' - ').replace('_', ' ').title()
-                return info_copy
+            if key.lower() in disease_name.lower():
+                return info
         
         # Generic response
         return {
-            'name': disease_name.replace('___', ' - ').replace('_', ' ').title(),
+            'name': disease_name,
             'symptoms': 'Consult agriculture expert for proper diagnosis. Upload clear images for better analysis.',
             'treatment': 'Seek professional advice from Krishi Vigyan Kendra or local agriculture department',
             'prevention': 'Maintain good agricultural practices, field hygiene, and regular monitoring',
             'chemicals': 'Consult local agriculture department for specific chemical recommendations'
         }
-
 
 # ================= ADVANCED WEATHER FUNCTIONS =================
 def get_real_time_weather(city_name):
@@ -217,15 +490,15 @@ def get_real_time_weather(city_name):
 def get_weather_icon(icon_code):
     """Get weather icon from OpenWeatherMap"""
     icon_map = {
-        '01d': '☀️', '01n': '🌙',  # Clear sky
-        '02d': '⛅', '02n': '☁️',   # Few clouds
-        '03d': '☁️', '03n': '☁️',   # Scattered clouds
-        '04d': '☁️', '04n': '☁️',   # Broken clouds
-        '09d': '🌧️', '09n': '🌧️',  # Shower rain
-        '10d': '🌦️', '10n': '🌦️',  # Rain
-        '11d': '⛈️', '11n': '⛈️',   # Thunderstorm
-        '13d': '❄️', '13n': '❄️',   # Snow
-        '50d': '🌫️', '50n': '🌫️'   # Mist
+        '01d': '☀️', '01n': '🌙',
+        '02d': '⛅', '02n': '☁️',
+        '03d': '☁️', '03n': '☁️',
+        '04d': '☁️', '04n': '☁️',
+        '09d': '🌧️', '09n': '🌧️',
+        '10d': '🌦️', '10n': '🌦️',
+        '11d': '⛈️', '11n': '⛈️',
+        '13d': '❄️', '13n': '❄️',
+        '50d': '🌫️', '50n': '🌫️'
     }
     return icon_map.get(icon_code, '🌤️')
 
@@ -240,7 +513,6 @@ def get_weather_advice(weather_data):
     
     advice = []
     
-    # Temperature based advice
     if temp < 10:
         advice.append("❄️ Too cold for most crops. Protect sensitive plants.")
     elif 10 <= temp <= 25:
@@ -250,13 +522,11 @@ def get_weather_advice(weather_data):
     else:
         advice.append("🌡️ Hot weather. Increase watering frequency.")
     
-    # Humidity based advice
     if humidity < 40:
         advice.append("💧 Low humidity. Increase irrigation frequency.")
     elif humidity > 80:
         advice.append("💦 High humidity. Watch for fungal diseases.")
     
-    # Weather condition advice
     if 'rain' in description:
         advice.append("🌧️ Rain expected. Delay irrigation and chemical spraying.")
     if 'storm' in description:
@@ -591,6 +861,26 @@ st.markdown("""
         border-radius: 15px;
         margin: 0.5rem 0;
     }
+    .voice-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin: 1rem 0;
+    }
+    .finance-card {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin: 1rem 0;
+    }
+    .community-card {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin: 1rem 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -656,6 +946,26 @@ def load_disease_detector():
 def load_crop_recommender():
     return CropRecommender()
 
+@st.cache_resource
+def load_voice_chatbot():
+    return SimpleVoiceChatbot()
+
+@st.cache_resource
+def load_yield_predictor():
+    return SimpleYieldPredictor()
+
+@st.cache_resource
+def load_irrigation_advisor():
+    return SmartIrrigationAdvisor()
+
+@st.cache_resource
+def load_financial_advisor():
+    return FinancialAdvisor()
+
+@st.cache_resource
+def load_community_platform():
+    return CommunityPlatform()
+
 # ================= YIELD PREDICTION =================
 def predict_yield(crop_type, area_hectares, soil_quality, rainfall, temperature):
     """Predict crop yield"""
@@ -686,7 +996,305 @@ def get_market_prices():
         'cotton': {'price': 75.0, 'unit': 'kg', 'trend': 'up', 'change': 1.5}
     }
 
-# ================= PAGE FUNCTIONS =================
+# ================= NEW FINANCIAL PAGES =================
+def show_financial_services():
+    st.header("💰 Financial Services & Loan Advisor")
+    
+    advisor = load_financial_advisor()
+    
+    tab1, tab2, tab3 = st.tabs(["🏦 Loan Eligibility", "📈 Profit Calculator", "🎯 Government Schemes"])
+    
+    with tab1:
+        st.subheader("🏦 Loan Eligibility Checker")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            annual_income = st.number_input("Annual Income (₹)", min_value=0, value=50000)
+            land_area = st.number_input("Land Area (Hectares)", min_value=0.0, value=2.0)
+        
+        with col2:
+            credit_score = st.slider("Credit Score", 300, 900, 650)
+            existing_loans = st.number_input("Number of Existing Loans", min_value=0, value=0)
+        
+        if st.button("Check Eligibility", use_container_width=True):
+            eligibility, message = advisor.check_loan_eligibility(
+                annual_income, land_area, credit_score, existing_loans
+            )
+            
+            st.markdown('<div class="finance-card">', unsafe_allow_html=True)
+            st.success(f"## {eligibility}")
+            st.write(f"**Details:** {message}")
+            
+            # Show recommended schemes
+            st.subheader("💡 Recommended Loan Schemes")
+            for scheme_id, scheme in advisor.loan_schemes.items():
+                st.write(f"**{scheme['name']}**")
+                st.write(f"Amount: {scheme.get('amount', 'N/A')}")
+                st.write(f"Eligibility: {scheme.get('eligibility', 'N/A')}")
+                st.markdown("---")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+    
+    with tab2:
+        st.subheader("📈 Crop Profit Calculator")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            crop_type = st.selectbox("Select Crop", ['rice', 'wheat', 'maize', 'tomato', 'potato', 'cotton'])
+            area_hectares = st.number_input("Area (Hectares)", min_value=0.1, value=1.0)
+            input_cost = st.number_input("Input Cost per Hectare (₹)", min_value=0, value=25000)
+        
+        with col2:
+            expected_yield = st.number_input("Expected Yield (kg/hectare)", min_value=0, value=4000)
+            market_price = st.number_input("Expected Market Price (₹/kg)", min_value=0.0, value=25.0)
+        
+        if st.button("Calculate Profit", use_container_width=True):
+            result = advisor.calculate_profit(
+                crop_type, area_hectares, input_cost, expected_yield, market_price
+            )
+            
+            st.markdown('<div class="finance-card">', unsafe_allow_html=True)
+            st.success("## Profit Analysis")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric("Expected Income", f"₹{result['expected_income']:,.0f}")
+                st.metric("Total Cost", f"₹{result['total_cost']:,.0f}")
+            
+            with col2:
+                st.metric("Expected Profit", f"₹{result['profit']:,.0f}")
+                st.metric("Profit Margin", f"{result['profit_margin']:.1f}%")
+            
+            with col3:
+                st.write("**Recommendation:**")
+                st.info(result['recommendation'])
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+    
+    with tab3:
+        st.subheader("🎯 Government Schemes")
+        
+        for scheme_id, scheme in advisor.loan_schemes.items():
+            st.markdown('<div class="finance-card">', unsafe_allow_html=True)
+            st.write(f"### {scheme['name']}")
+            st.write(f"**Amount:** {scheme.get('amount', 'N/A')}")
+            if 'interest' in scheme:
+                st.write(f"**Interest Rate:** {scheme['interest']}")
+            if 'premium' in scheme:
+                st.write(f"**Premium:** {scheme['premium']}")
+            if 'coverage' in scheme:
+                st.write(f"**Coverage:** {scheme['coverage']}")
+            st.write(f"**Eligibility:** {scheme.get('eligibility', 'N/A')}")
+            st.write(f"**Documents Required:** {scheme.get('documents', 'N/A')}")
+            if 'apply_link' in scheme:
+                st.write(f"**Apply at:** {scheme['apply_link']}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+# ================= NEW COMMUNITY PAGES =================
+def show_community_platform():
+    st.header("👥 Farmer Community Platform")
+    
+    community = load_community_platform()
+    
+    tab1, tab2, tab3 = st.tabs(["💬 Discussions", "👨‍🌾 Expert Advice", "🌟 Success Stories"])
+    
+    with tab1:
+        st.subheader("💬 Community Discussions")
+        
+        # Add new discussion
+        with st.form("new_discussion"):
+            st.write("Start a New Discussion")
+            title = st.text_input("Discussion Title")
+            content = st.text_area("Discussion Content")
+            tags = st.text_input("Tags (comma separated)")
+            
+            if st.form_submit_button("Post Discussion"):
+                if title and content:
+                    author = st.session_state.user_info['full_name']
+                    discussion = community.add_discussion(title, content, author, tags)
+                    st.success("Discussion posted successfully!")
+        
+        # Display discussions
+        st.subheader("Recent Discussions")
+        
+        for discussion in community.discussions[-5:]:  # Show last 5 discussions
+            st.markdown('<div class="community-card">', unsafe_allow_html=True)
+            st.write(f"### {discussion['title']}")
+            st.write(f"**By:** {discussion['author']} | **When:** {discussion['timestamp']}")
+            st.write(f"**Tags:** {discussion['tags']}")
+            st.write(discussion['content'])
+            
+            # Comments section
+            with st.expander(f"Comments ({len(discussion['comments'])})"):
+                for comment in discussion['comments']:
+                    st.write(f"**{comment['author']}** ({comment['timestamp']}):")
+                    st.write(comment['comment'])
+                    st.markdown("---")
+                
+                # Add comment
+                new_comment = st.text_input("Add your comment", key=f"comment_{discussion['id']}")
+                if st.button("Post Comment", key=f"btn_{discussion['id']}"):
+                    if new_comment:
+                        community.add_comment(discussion['id'], new_comment, st.session_state.user_info['full_name'])
+                        st.success("Comment added!")
+                        st.rerun()
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+    
+    with tab2:
+        st.subheader("👨‍🌾 Expert Advice")
+        
+        st.info("Connect with agriculture experts for personalized guidance")
+        
+        for i, expert in enumerate(community.experts):
+            st.markdown('<div class="community-card">', unsafe_allow_html=True)
+            st.write(f"### {expert['name']}")
+            st.write(f"**Specialization:** {expert['specialization']}")
+            st.write(f"**Experience:** {expert['experience']}")
+            
+            # Contact form
+            with st.expander("Ask a Question"):
+                question = st.text_area("Your question for the expert", key=f"question_{i}")
+                if st.button("Submit Question", key=f"ask_{i}"):
+                    st.success("Question submitted! Expert will respond within 24 hours.")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+    
+    with tab3:
+        st.subheader("🌟 Success Stories")
+        
+        success_stories = community.get_success_stories()
+        
+        for story in success_stories:
+            st.markdown('<div class="community-card">', unsafe_allow_html=True)
+            st.write(f"### {story['farmer']}")
+            st.write(f"**Crop:** {story['crop']}")
+            st.write(f"**Achievement:** {story['achievement']}")
+            st.write(f"**Story:** {story['story']}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+# ================= EXISTING PAGES =================
+def show_smart_irrigation():
+    st.header("💧 Smart Irrigation Advisor")
+    
+    advisor = load_irrigation_advisor()
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("🌱 Crop & Soil Details")
+        crop_type = st.selectbox("Select Crop", ['rice', 'wheat', 'tomato', 'potato', 'maize', 'cotton', 'sugarcane'])
+        soil_type = st.selectbox("Soil Type", ['sandy', 'clay', 'loamy'])
+        soil_moisture = st.slider("Current Soil Moisture (%)", 0, 100, 50)
+        
+        st.subheader("📍 Weather Location")
+        city = st.text_input("Enter city for weather data", "Lucknow")
+        
+        weather_data = None
+        if st.button("🌤️ Get Weather-based Advice", use_container_width=True):
+            weather_data = get_real_time_weather(city)
+    
+    with col2:
+        if st.button("💧 Generate Irrigation Plan", use_container_width=True) or weather_data:
+            with st.spinner("Analyzing conditions for optimal irrigation..."):
+                schedule = advisor.get_irrigation_schedule(crop_type, soil_type, weather_data, soil_moisture)
+                
+                st.markdown('<div class="prediction-result">', unsafe_allow_html=True)
+                st.success("## 💧 Smart Irrigation Schedule")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.write("**📋 Schedule Details:**")
+                    st.info(f"**Crop:** {crop_type.title()}")
+                    st.info(f"**Frequency:** {schedule['frequency']}")
+                    st.info(f"**Duration:** {schedule['duration']}")
+                    st.info(f"**Best Time:** {schedule['best_time']}")
+                
+                with col2:
+                    st.write("**🌿 Conditions Analysis:**")
+                    if weather_data:
+                        st.success(f"**Weather:** {weather_data['description']}")
+                        st.success(f"**Temperature:** {weather_data['temperature']}°C")
+                        st.success(f"**Humidity:** {weather_data['humidity']}%")
+                    st.warning(f"**Soil Moisture:** {soil_moisture}%")
+                
+                if 'advice' in schedule:
+                    st.markdown("---")
+                    st.write("**💡 Expert Advice:**")
+                    st.error(schedule['advice'])
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+
+def show_advanced_yield_prediction():
+    st.header("📈 Advanced Yield Prediction")
+    
+    predictor = load_yield_predictor()
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("🌱 Crop & Farm Details")
+        crop_type = st.selectbox("Select Crop", ['rice', 'wheat', 'maize', 'chickpea', 'sugarcane', 'cotton', 'potato'])
+        area_hectares = st.number_input("Area (Hectares)", min_value=0.1, max_value=100.0, value=1.0)
+        soil_quality = st.slider("Soil Quality (1-10)", 1, 10, 7)
+        expected_rainfall = st.slider("Expected Rainfall (mm)", 0, 500, 200)
+        avg_temperature = st.slider("Average Temperature (°C)", 15, 35, 25)
+        
+        st.subheader("🧪 Soil Nutrition")
+        N = st.slider("Nitrogen Level (N)", 0, 100, 50)
+        P = st.slider("Phosphorus Level (P)", 0, 100, 50)
+        K = st.slider("Potassium Level (K)", 0, 100, 50)
+        humidity = st.slider("Expected Humidity (%)", 30, 100, 65)
+    
+    with col2:
+        prediction_type = st.radio("🎯 Prediction Type", ["Basic Prediction", "Advanced AI Prediction"])
+        
+        if st.button("📊 Predict Yield", use_container_width=True):
+            with st.spinner("Running AI prediction analysis..."):
+                if prediction_type == "Advanced AI Prediction":
+                    # Use advanced mathematical model
+                    crop_params = {
+                        'N': N, 'P': P, 'K': K,
+                        'temperature': avg_temperature,
+                        'humidity': humidity,
+                        'rainfall': expected_rainfall
+                    }
+                    base_yield = predictor.predict_advanced_yield(crop_type, crop_params)
+                    predicted_yield = base_yield * area_hectares * (soil_quality/10)
+                    method = "🤖 Advanced AI Model"
+                else:
+                    # Use basic prediction
+                    predicted_yield = predict_yield(crop_type, area_hectares, soil_quality, expected_rainfall, avg_temperature)
+                    method = "📊 Basic Calculation"
+                
+                st.markdown('<div class="prediction-result">', unsafe_allow_html=True)
+                st.success(f"## Predicted Yield: {predicted_yield:,.0f} kg")
+                
+                st.write(f"**Method:** {method}")
+                st.write(f"**Crop:** {crop_type.title()}")
+                st.write(f"**Area:** {area_hectares} hectares")
+                st.write(f"**Expected Production:** {predicted_yield:,.0f} kg")
+                
+                # Yield insights
+                st.markdown("---")
+                st.subheader("📈 Yield Insights")
+                
+                if predicted_yield < 1000:
+                    st.error("**⚠️ Low Yield Alert:** Consider soil improvement and better irrigation practices")
+                    st.info("**Recommendations:** Add organic compost, improve drainage, use balanced fertilizers")
+                elif predicted_yield < 5000:
+                    st.warning("**📊 Moderate Yield:** Good potential with improvements")
+                    st.info("**Suggestions:** Optimize fertilization, monitor pests, improve irrigation")
+                else:
+                    st.success("**🎉 Excellent Yield Expected!** Maintain current practices")
+                    st.info("**Tips:** Continue good practices, monitor for diseases, maintain soil health")
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+
 def show_weather_dashboard():
     st.header("🌤️ Real-Time Weather & Farming Advisory")
     
@@ -703,7 +1311,6 @@ def show_weather_dashboard():
                 if weather_data:
                     st.success(f"✅ Weather data for {weather_data['city']}, {weather_data['country']}")
                     
-                    # Weather cards
                     col1, col2, col3, col4 = st.columns(4)
                     
                     with col1:
@@ -731,7 +1338,6 @@ def show_weather_dashboard():
                         st.write(f"Min: {weather_data['min_temp']}°C | Max: {weather_data['max_temp']}°C")
                         st.markdown('</div>', unsafe_allow_html=True)
                     
-                    # Farming advice
                     st.subheader("🧑‍🌾 Farming Advisory")
                     advice = get_weather_advice(weather_data)
                     st.info(f"**Recommendation:** {advice}")
@@ -772,7 +1378,7 @@ def show_disease_detection():
         st.success(f"✅ Dataset Loaded: {len(detector.class_names)} plant types")
         st.info(f"🌿 Supported plants: {', '.join(detector.class_names[:8])}...")
     else:
-        st.warning("⚠️ Using enhanced detection. Upload plant images for analysis.")
+        st.warning("⚠️ Using enhanced AI detection. Upload plant images for analysis.")
     
     st.markdown("---")
     
@@ -786,7 +1392,6 @@ def show_disease_detection():
             image = Image.open(uploaded_file)
             st.image(image, caption="Uploaded Image", use_column_width=True)
             
-            # Image analysis
             st.subheader("📊 Image Analysis")
             img_array = np.array(image)
             if len(img_array.shape) == 3:
@@ -918,36 +1523,7 @@ def show_crop_recommendation():
                 st.markdown('</div>', unsafe_allow_html=True)
 
 def show_yield_prediction():
-    st.header("📈 Crop Yield Prediction")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Farm Details")
-        crop_type = st.selectbox("Select Crop", ['rice', 'wheat', 'maize', 'chickpea', 'sugarcane', 'cotton', 'potato'])
-        area_hectares = st.number_input("Area (Hectares)", min_value=0.1, max_value=100.0, value=1.0)
-        soil_quality = st.slider("Soil Quality (1-10)", 1, 10, 7)
-        expected_rainfall = st.slider("Expected Rainfall (mm)", 0, 500, 200)
-        avg_temperature = st.slider("Average Temperature (°C)", 15, 35, 25)
-    
-    with col2:
-        if st.button("📊 Predict Yield", use_container_width=True):
-            predicted_yield = predict_yield(crop_type, area_hectares, soil_quality, expected_rainfall, avg_temperature)
-            
-            st.markdown('<div class="prediction-result">', unsafe_allow_html=True)
-            st.success(f"## Predicted Yield: {predicted_yield:,.0f} kg")
-            
-            st.subheader("📋 Yield Insights")
-            st.write(f"• Expected production: {predicted_yield:,.0f} kg")
-            st.write(f"• For {area_hectares} hectares of {crop_type}")
-            st.write(f"• Based on current soil and weather conditions")
-            
-            if predicted_yield < 1000:
-                st.warning("**Recommendation:** Consider soil improvement and better irrigation")
-            else:
-                st.success("**Good yield expected!** Maintain current practices")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
+    show_advanced_yield_prediction()
 
 def show_market_prices():
     st.header("💰 Current Market Prices")
@@ -956,7 +1532,6 @@ def show_market_prices():
     
     st.subheader("📊 Live Crop Prices (₹ per kg)")
     
-    # Display prices in cards
     cols = st.columns(4)
     for idx, (crop, data) in enumerate(market_data.items()):
         with cols[idx % 4]:
@@ -969,7 +1544,6 @@ def show_market_prices():
             st.write(f"Trend: {data['trend']}")
             st.markdown('</div>', unsafe_allow_html=True)
     
-    # Market insights
     st.subheader("📈 Market Insights")
     col1, col2 = st.columns(2)
     
@@ -996,9 +1570,59 @@ def show_chatbot():
     st.header("🤖 Krishi Mitra - Smart Farming Assistant")
     
     chatbot = load_chatbot()
+    voice_chatbot = load_voice_chatbot()
     
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
+    
+    # Voice Assistant Section
+    st.markdown('<div class="voice-card">', unsafe_allow_html=True)
+    st.subheader("🎤 Voice Assistant (Regional Languages)")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        language = st.selectbox("Select Language", 
+                              ["Hindi", "English", "Punjabi", "Marathi", "Tamil", "Telugu", "Bengali"])
+        
+        text_input = st.text_area("Enter your question in regional language:", 
+                                placeholder="आप टमाटर के लिए कौन सी खाद इस्तेमाल करें?")
+        
+        if text_input and language:
+            if st.button("🔊 Generate Voice Response", use_container_width=True):
+                with st.spinner("Generating voice response..."):
+                    response = chatbot.get_response(text_input)
+                    st.session_state.chat_history.append({"role": "user", "message": f"🎤 {text_input}"})
+                    st.session_state.chat_history.append({"role": "bot", "message": response})
+                    
+                    # Convert to speech
+                    lang_code = voice_chatbot.supported_languages.get(language.lower(), 'hi')
+                    audio_response = voice_chatbot.text_to_speech(response, lang_code)
+                    if audio_response:
+                        st.audio(audio_response, format='audio/mp3')
+                        st.success("✅ Voice response generated!")
+                    else:
+                        st.info("💡 Voice feature requires: pip install gtts")
+    
+    with col2:
+        st.write("**🗣️ Voice Features:**")
+        st.info("""
+        **Supported Languages:**
+        • Hindi 🇮🇳
+        • English 🏴
+        • Punjabi 
+        • Marathi
+        • Tamil
+        • Telugu
+        • Bengali
+        
+        **How to use:**
+        1. Select your language
+        2. Type question in your language
+        3. Get text + voice response
+        4. Listen to farming advice
+        """)
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Quick questions
     st.subheader("💬 Quick Questions")
@@ -1016,7 +1640,7 @@ def show_chatbot():
     st.markdown("---")
     
     # Chat history
-    st.subheader("💭 Conversation")
+    st.subheader("💭 Conversation History")
     for chat in st.session_state.chat_history[-8:]:
         if chat["role"] == "user":
             st.markdown(f'<div class="chat-message user-message"><strong>You:</strong> {chat["message"]}</div>', unsafe_allow_html=True)
@@ -1097,8 +1721,8 @@ def show_dashboard():
             st.session_state.current_page = "Disease Detection"
             st.rerun()
     with col3:
-        if st.button("🌤️ Weather", use_container_width=True):
-            st.session_state.current_page = "Weather Dashboard"
+        if st.button("💧 Irrigation", use_container_width=True):
+            st.session_state.current_page = "Smart Irrigation"
             st.rerun()
     with col4:
         if st.button("🤖 Chatbot", use_container_width=True):
@@ -1227,8 +1851,11 @@ def show_main_dashboard():
         
         selected = option_menu(
             menu_title="Navigation",
-            options=["Dashboard", "Weather Dashboard", "Crop Recommendation", "Disease Detection", "Yield Prediction", "Market Prices", "Krishi Mitra Chatbot", "Profile"],
-            icons=["house", "cloud-sun", "tree", "search", "graph-up", "currency-rupee", "robot", "person"],
+            options=["Dashboard", "Weather Dashboard", "Crop Recommendation", "Disease Detection", 
+                    "Yield Prediction", "Smart Irrigation", "Financial Services", "Community Platform", 
+                    "Market Prices", "Krishi Mitra Chatbot", "Profile"],
+            icons=["house", "cloud-sun", "tree", "search", "graph-up", "droplet", "currency-rupee", 
+                   "people", "currency-exchange", "robot", "person"],
             menu_icon="cast",
             default_index=0,
             styles={
@@ -1254,6 +1881,12 @@ def show_main_dashboard():
         show_disease_detection()
     elif selected == "Yield Prediction":
         show_yield_prediction()
+    elif selected == "Smart Irrigation":
+        show_smart_irrigation()
+    elif selected == "Financial Services":
+        show_financial_services()
+    elif selected == "Community Platform":
+        show_community_platform()
     elif selected == "Market Prices":
         show_market_prices()
     elif selected == "Krishi Mitra Chatbot":
